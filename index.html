@@ -2,176 +2,405 @@
 <html lang="id" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TOMZ STORE - Jual Beli Akun Game Terpercaya</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body.cart-open, body.modal-open { overflow: hidden; }
+    </style>
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen flex flex-col justify-between">
+<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen flex flex-col justify-between select-none">
 
-    <!-- NAVBAR -->
-    <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-3">
+    <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+            
+            <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
                 <div class="bg-indigo-600 p-2 rounded-xl text-white shadow-lg shadow-indigo-600/30">
-                    <i class="fa-solid fa-gamepad text-xl"></i>
+                    <i class="fa-solid fa-gamepad text-lg sm:text-xl"></i>
                 </div>
-                <span class="text-xl font-black tracking-wider bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">TOMZ STORE</span>
+                <span class="text-lg sm:text-xl font-black tracking-wider bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">TOMZ STORE</span>
             </div>
-            <a href="https://wa.me/6281234567890" target="_blank" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-4 py-2 rounded-xl text-sm transition-all flex items-center gap-2 shadow-lg shadow-indigo-600/20">
-                <i class="fa-brands fa-whatsapp text-lg"></i>
-                <span>Hubungi Admin</span>
-            </a>
+
+            <div class="flex-1 max-w-md">
+                <div class="relative">
+                    <input type="text" id="searchInput" onkeyup="renderProducts()" placeholder="Cari game, skin, atau deskripsi..." class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs sm:text-sm rounded-xl pl-9 pr-4 py-2 focus:outline-none focus:border-indigo-500 transition">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs sm:text-sm"></i>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                <button onclick="openAdminModal()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-indigo-400 p-2 rounded-xl transition flex items-center gap-1.5 text-xs font-semibold">
+                    <i class="fa-solid fa-user-gear text-base"></i>
+                    <span class="hidden sm:inline">Kelola Produk</span>
+                </button>
+
+                <button onclick="toggleCart()" class="relative bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 p-2 rounded-xl transition">
+                    <i class="fa-solid fa-cart-shopping text-base sm:text-lg"></i>
+                    <span id="cartCount" class="absolute -top-1 -right-1 bg-indigo-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">0</span>
+                </button>
+            </div>
         </div>
     </header>
 
-    <!-- MAIN CONTENT -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-grow">
+    <div id="cartOverlay" onclick="toggleCart()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden transition-opacity"></div>
+    <div id="cartDrawer" class="fixed top-0 right-0 h-full w-full sm:w-96 bg-slate-900 border-l border-slate-800 z-50 transform translate-x-full transition-transform duration-300 flex flex-col justify-between">
+        <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+            <h3 class="font-bold text-lg text-slate-100 flex items-center gap-2">
+                <i class="fa-solid fa-cart-shopping text-indigo-400"></i> Keranjang Belanja
+            </h3>
+            <button onclick="toggleCart()" class="text-slate-400 hover:text-white p-2">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <div id="cartItemsContainer" class="p-4 flex-grow overflow-y-auto space-y-3"></div>
+
+        <div class="p-4 border-t border-slate-800 bg-slate-950">
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-sm text-slate-400">Total Pembayaran:</span>
+                <span id="cartTotal" class="text-xl font-black text-indigo-400">Rp 0</span>
+            </div>
+            <button onclick="checkoutCart()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2">
+                <i class="fa-brands fa-whatsapp text-lg"></i> Checkout via WhatsApp
+            </button>
+        </div>
+    </div>
+
+    <div id="adminOverlay" onclick="closeAdminModal()" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden"></div>
+    <div id="adminModal" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl z-50 hidden p-6 max-h-[90vh] overflow-y-auto">
         
-        <!-- HERO BANNER -->
-        <section class="bg-gradient-to-r from-indigo-900/40 via-slate-900 to-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-10 mb-10 relative overflow-hidden">
+        <div id="pinFormSection">
+            <h3 class="text-xl font-bold mb-4 text-center">Masukkan PIN Admin</h3>
+            <div class="max-w-xs mx-auto space-y-4">
+                <input type="password" id="adminPinInput" placeholder="PIN Default: 1234" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-center text-lg tracking-widest focus:outline-none focus:border-indigo-500">
+                <button onclick="verifyPin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl">Masuk Panel Admin</button>
+            </div>
+        </div>
+
+        <div id="adminDashboardSection" class="hidden">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-4 mb-6">
+                <h3 class="text-lg font-bold text-indigo-400"><i class="fa-solid fa-sliders mr-2"></i> Kelola Stok & Tambah Akun</h3>
+                <button onclick="closeAdminModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <form onsubmit="saveNewProduct(event)" class="bg-slate-800/50 p-4 rounded-xl border border-slate-700/50 mb-6 space-y-3">
+                <h4 class="font-bold text-sm text-slate-200">Tambah Akun Baru</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <input type="text" id="newTitle" placeholder="Judul Akun (Contoh: MLBB Mythic)" required class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs">
+                    <select id="newCategory" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs">
+                        <option value="mlbb">Mobile Legends</option>
+                        <option value="ff">Free Fire</option>
+                        <option value="roblox">Roblox</option>
+                    </select>
+                    <input type="number" id="newPrice" placeholder="Harga (Contoh: 250000)" required class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs">
+                    <input type="number" id="newStock" placeholder="Jumlah Stok" value="1" min="0" required class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs">
+                    
+                    <div class="sm:col-span-2">
+                        <label class="block text-[11px] text-slate-400 mb-1">Pilih Gambar Akun dari Galeri:</label>
+                        <input type="file" id="newImageFile" accept="image/*" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-400 file:mr-3 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500">
+                    </div>
+
+                    <textarea id="newFeatures" placeholder="Fitur/Deskripsi Akun (Pisahkan dengan koma)" required class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs sm:col-span-2 h-16"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-lg text-xs transition">+ Tambah Akun Ke Web</button>
+            </form>
+
+            <h4 class="font-bold text-sm text-slate-200 mb-3">Daftar Akun Tayang</h4>
+            <div id="adminProductList" class="space-y-3"></div>
+        </div>
+    </div>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-grow">
+        <section class="bg-gradient-to-r from-indigo-900/40 via-slate-900 to-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-8 mb-6 relative overflow-hidden">
             <div class="max-w-2xl relative z-10">
-                <span class="bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider inline-block mb-3">Garansi Anti-HB 100%</span>
-                <h1 class="text-3xl sm:text-4xl font-black tracking-tight mb-3">Marketplace Akun Game Premium & Fast Response</h1>
-                <p class="text-slate-400 text-sm sm:text-base mb-6">Proses transaksi instan, data aman sampai tangan pembeli. Didukung sistem garansi full jaminan.</p>
-                <div class="flex flex-wrap gap-4 text-xs font-medium text-slate-300">
-                    <div class="flex items-center gap-2 bg-slate-800/80 px-3 py-2 rounded-lg border border-slate-700/50">
-                        <i class="fa-solid fa-shield-check text-indigo-400"></i> Full Anti HB
-                    </div>
-                    <div class="flex items-center gap-2 bg-slate-800/80 px-3 py-2 rounded-lg border border-slate-700/50">
-                        <i class="fa-solid fa-bolt text-amber-400"></i> Proses 5-10 Menit
-                    </div>
-                </div>
+                <span class="bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider inline-block mb-2">Garansi Anti-HB 100%</span>
+                <h1 class="text-2xl sm:text-4xl font-black tracking-tight mb-2">Marketplace Akun Game Instant</h1>
+                <p class="text-slate-400 text-xs sm:text-sm">Pilih akun idamanmu, masukkan keranjang atau langsung beli via WhatsApp fast response.</p>
             </div>
         </section>
 
-        <!-- FILTER TABS -->
-        <section class="mb-8">
-            <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-                <button onclick="filterCategory('all', this)" class="filter-btn active bg-indigo-600 text-white font-semibold px-5 py-2.5 rounded-xl text-sm whitespace-nowrap transition-all">Semua Game</button>
-                <button onclick="filterCategory('mlbb', this)" class="filter-btn bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 font-medium px-5 py-2.5 rounded-xl text-sm whitespace-nowrap transition-all">Mobile Legends</button>
-                <button onclick="filterCategory('ff', this)" class="filter-btn bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 font-medium px-5 py-2.5 rounded-xl text-sm whitespace-nowrap transition-all">Free Fire</button>
-                <button onclick="filterCategory('roblox', this)" class="filter-btn bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 font-medium px-5 py-2.5 rounded-xl text-sm whitespace-nowrap transition-all">Roblox</button>
-            </div>
+        <section class="mb-6 flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+            <button onclick="filterCategory('all', this)" class="filter-btn active bg-indigo-600 text-white font-semibold px-4 py-2 rounded-xl text-xs sm:text-sm whitespace-nowrap transition-all">Semua Game</button>
+            <button onclick="filterCategory('mlbb', this)" class="filter-btn bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 font-medium px-4 py-2 rounded-xl text-xs sm:text-sm whitespace-nowrap transition-all">Mobile Legends</button>
+            <button onclick="filterCategory('ff', this)" class="filter-btn bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 font-medium px-4 py-2 rounded-xl text-xs sm:text-sm whitespace-nowrap transition-all">Free Fire</button>
+            <button onclick="filterCategory('roblox', this)" class="filter-btn bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 font-medium px-4 py-2 rounded-xl text-xs sm:text-sm whitespace-nowrap transition-all">Roblox</button>
         </section>
 
-        <!-- KATALOG PRODUK -->
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="productGrid">
-            
-            <!-- CARD PRODUK 1 -->
-            <div class="product-item mlbb bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-indigo-500/50 transition-all flex flex-col justify-between">
-                <div>
-                    <div class="relative aspect-video bg-slate-800 overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80" alt="MLBB Account" class="w-full h-full object-cover">
-                        <span class="absolute top-3 left-3 bg-indigo-600/90 backdrop-blur-md text-white text-xs font-bold px-2.5 py-1 rounded-md">MLBB</span>
-                        <span class="absolute top-3 right-3 bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-semibold px-2.5 py-1 rounded-md">Ready</span>
-                    </div>
-                    <div class="p-5">
-                        <h3 class="font-bold text-lg mb-2 text-slate-100">Mythic Glory | 3 Skin Collector</h3>
-                        <ul class="text-xs text-slate-400 space-y-1.5 mb-4">
-                            <li><i class="fa-solid fa-check text-indigo-400 mr-1.5"></i> All Unbind (Moonton Sepaket)</li>
-                            <li><i class="fa-solid fa-check text-indigo-400 mr-1.5"></i> Emblem Max, Winrate 68%</li>
-                            <li><i class="fa-solid fa-check text-indigo-400 mr-1.5"></i> Hero 120, Skin 245</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="p-5 pt-0 border-t border-slate-800/50 mt-auto flex items-center justify-between gap-4">
-                    <div>
-                        <span class="text-xs text-slate-500 block">Harga</span>
-                        <span class="text-lg font-black text-indigo-400">Rp 450.000</span>
-                    </div>
-                    <button onclick="buyProduct('Mythic Glory | 3 Skin Collector', '450.000')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm px-4 py-2 rounded-xl transition-all">Beli Sekarang</button>
-                </div>
-            </div>
-
-            <!-- CARD PRODUK 2 -->
-            <div class="product-item ff bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-indigo-500/50 transition-all flex flex-col justify-between">
-                <div>
-                    <div class="relative aspect-video bg-slate-800 overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=600&q=80" alt="FF Account" class="w-full h-full object-cover">
-                        <span class="absolute top-3 left-3 bg-amber-600/90 backdrop-blur-md text-white text-xs font-bold px-2.5 py-1 rounded-md">Free Fire</span>
-                        <span class="absolute top-3 right-3 bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-semibold px-2.5 py-1 rounded-md">Ready</span>
-                    </div>
-                    <div class="p-5">
-                        <h3 class="font-bold text-lg mb-2 text-slate-100">Akun FF Old | SG2 Hijau + Incubator</h3>
-                        <ul class="text-xs text-slate-400 space-y-1.5 mb-4">
-                            <li><i class="fa-solid fa-check text-indigo-400 mr-1.5"></i> Login FB (Data First Hand)</li>
-                            <li><i class="fa-solid fa-check text-indigo-400 mr-1.5"></i> Vault Rame, Elite Pass S5-S12</li>
-                            <li><i class="fa-solid fa-check text-indigo-400 mr-1.5"></i> Set Old Baju Janggut</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="p-5 pt-0 border-t border-slate-800/50 mt-auto flex items-center justify-between gap-4">
-                    <div>
-                        <span class="text-xs text-slate-500 block">Harga</span>
-                        <span class="text-lg font-black text-indigo-400">Rp 280.000</span>
-                    </div>
-                    <button onclick="buyProduct('Akun FF Old | SG2 Hijau', '280.000')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm px-4 py-2 rounded-xl transition-all">Beli Sekarang</button>
-                </div>
-            </div>
-
-            <!-- CARD PRODUK 3 -->
-            <div class="product-item roblox bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-indigo-500/50 transition-all flex flex-col justify-between">
-                <div>
-                    <div class="relative aspect-video bg-slate-800 overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?auto=format&fit=crop&w=600&q=80" alt="Roblox Account" class="w-full h-full object-cover">
-                        <span class="absolute top-3 left-3 bg-red-600/90 backdrop-blur-md text-white text-xs font-bold px-2.5 py-1 rounded-md">Roblox</span>
-                        <span class="absolute top-3 right-3 bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-semibold px-2.5 py-1 rounded-md">Ready</span>
-                    </div>
-                    <div class="p-5">
-                        <h3 class="font-bold text-lg mb-2 text-slate-100">Blox Fruits Max Level | Permanent Dough</h3>
-                        <ul class="text-xs text-slate-400 space-y-1.5 mb-4">
-                            <li><i class="fa-solid fa-check text-indigo-400 mr-1.5"></i> Level Max 2550 + Melee Complete</li>
-                            <li><i class="fa-solid fa-check text-indigo-400 mr-1.5"></i> V4 Full Gear (Human & Mink)</li>
-                            <li><i class="fa-solid fa-check text-indigo-400 mr-1.5"></i> Inventory Beli 50M+</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="p-5 pt-0 border-t border-slate-800/50 mt-auto flex items-center justify-between gap-4">
-                    <div>
-                        <span class="text-xs text-slate-500 block">Harga</span>
-                        <span class="text-lg font-black text-indigo-400">Rp 175.000</span>
-                    </div>
-                    <button onclick="buyProduct('Blox Fruits Max Level | Perm Dough', '175.000')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm px-4 py-2 rounded-xl transition-all">Beli Sekarang</button>
-                </div>
-            </div>
-
-        </section>
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="productGrid"></section>
     </main>
 
-    <!-- FOOTER -->
     <footer class="bg-slate-900 border-t border-slate-800 py-6 text-center text-xs text-slate-500">
         <p>&copy; 2026 TOMZ STORE. All Rights Reserved.</p>
     </footer>
 
-    <!-- SCRIPT LOGIC -->
     <script>
-        const whatsappNumber = "6281234567890"; // Ganti dengan nomor WhatsApp Admin
+        const whatsappNumber = "6281234567890";
+        const ADMIN_PIN = "1234";
 
-        function filterCategory(category, btn) {
+        const defaultProducts = [
+            {
+                id: 1,
+                title: "Mythic Glory | 3 Skin Collector",
+                category: "mlbb",
+                price: 450000,
+                stock: 1,
+                gameBadge: "MLBB",
+                image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80",
+                features: ["All Unbind (Moonton Sepaket)", "Emblem Max, Winrate 68%", "Hero 120, Skin 245"]
+            }
+        ];
+
+        let products = JSON.parse(localStorage.getItem('tomz_products')) || defaultProducts;
+        let cart = [];
+        let currentCategory = 'all';
+
+        function saveProductsToStorage() {
+            localStorage.setItem('tomz_products', JSON.stringify(products));
+            renderProducts();
+            renderAdminProductList();
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('productGrid');
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            grid.innerHTML = '';
+
+            const filtered = products.filter(p => {
+                const matchCategory = currentCategory === 'all' || p.category === currentCategory;
+                const matchSearch = p.title.toLowerCase().includes(searchQuery) || p.features.some(f => f.toLowerCase().includes(searchQuery));
+                return matchCategory && matchSearch;
+            });
+
+            if(filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-500">Akun tidak ditemukan atau stok belum ada.</div>`;
+                return;
+            }
+
+            filtered.forEach(p => {
+                const isReady = p.stock > 0;
+                const stockBadge = isReady 
+                    ? `<span class="bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-semibold px-2.5 py-1 rounded-md">Stok: ${p.stock}</span>` 
+                    : `<span class="bg-rose-500/20 border border-rose-500/40 text-rose-400 text-xs font-semibold px-2.5 py-1 rounded-md">Sold Out</span>`;
+
+                const featuresHTML = p.features.map(f => `<li><i class="fa-solid fa-check text-indigo-400 mr-1.5"></i> ${f}</li>`).join('');
+                const buyBtn = isReady 
+                    ? `<button onclick="addToCart(${p.id})" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs sm:text-sm px-3 py-2 rounded-xl transition flex items-center gap-1.5"><i class="fa-solid fa-cart-plus"></i> + Keranjang</button>` 
+                    : `<button disabled class="bg-slate-800 text-slate-600 cursor-not-allowed font-semibold text-xs sm:text-sm px-3 py-2 rounded-xl">Habis</button>`;
+
+                grid.innerHTML += `
+                    <div class="product-item bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-indigo-500/50 transition-all flex flex-col justify-between">
+                        <div>
+                            <div class="relative aspect-video bg-slate-800 overflow-hidden">
+                                <img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover">
+                                <span class="absolute top-3 left-3 bg-indigo-600/90 backdrop-blur-md text-white text-xs font-bold px-2.5 py-1 rounded-md">${p.gameBadge || 'GAME'}</span>
+                                <span class="absolute top-3 right-3">${stockBadge}</span>
+                            </div>
+                            <div class="p-5">
+                                <h3 class="font-bold text-base sm:text-lg mb-2 text-slate-100">${p.title}</h3>
+                                <ul class="text-xs text-slate-400 space-y-1.5 mb-4">${featuresHTML}</ul>
+                            </div>
+                        </div>
+                        <div class="p-4 border-t border-slate-800/50 mt-auto flex items-center justify-between gap-2">
+                            <div>
+                                <span class="text-[10px] text-slate-500 block">Harga</span>
+                                <span class="text-base sm:text-lg font-black text-indigo-400">Rp ${p.price.toLocaleString('id-ID')}</span>
+                            </div>
+                            <div class="flex gap-2">${buyBtn}</div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function openAdminModal() {
+            document.getElementById('adminOverlay').classList.remove('hidden');
+            document.getElementById('adminModal').classList.remove('hidden');
+            document.body.classList.add('modal-open');
+        }
+
+        function closeAdminModal() {
+            document.getElementById('adminOverlay').classList.add('hidden');
+            document.getElementById('adminModal').classList.add('hidden');
+            document.body.classList.remove('modal-open');
+        }
+
+        function verifyPin() {
+            if(document.getElementById('adminPinInput').value === ADMIN_PIN) {
+                document.getElementById('pinFormSection').classList.add('hidden');
+                document.getElementById('adminDashboardSection').classList.remove('hidden');
+                renderAdminProductList();
+            } else {
+                alert("PIN Salah! PIN Default: 1234");
+            }
+        }
+
+        function renderAdminProductList() {
+            const list = document.getElementById('adminProductList');
+            list.innerHTML = '';
+            products.forEach(p => {
+                list.innerHTML += `
+                    <div class="bg-slate-800 border border-slate-700 p-3 rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs">
+                        <div class="flex items-center gap-3 flex-grow">
+                            <img src="${p.image}" class="w-10 h-10 object-cover rounded-lg border border-slate-700">
+                            <div>
+                                <span class="font-bold text-slate-200 block">${p.title}</span>
+                                <span class="text-indigo-400">Rp ${p.price.toLocaleString('id-ID')}</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="text-slate-400">Stok:</label>
+                            <input type="number" value="${p.stock}" min="0" onchange="updateStockDirect(${p.id}, this.value)" class="w-14 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-center font-bold">
+                            <button onclick="deleteProduct(${p.id})" class="bg-rose-600/20 text-rose-400 border border-rose-500/30 p-1.5 rounded hover:bg-rose-600 hover:text-white transition">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function updateStockDirect(id, newStock) {
+            const p = products.find(prod => prod.id === id);
+            if(p) {
+                p.stock = parseInt(newStock) || 0;
+                saveProductsToStorage();
+            }
+        }
+
+        function deleteProduct(id) {
+            if(confirm("Hapus akun ini dari web?")) {
+                products = products.filter(p => p.id !== id);
+                saveProductsToStorage();
+            }
+        }
+
+        // FUNGSI UNTUK MEMBACA FILE DARI GALERI DAN CONVERT KE BASE64
+        function saveNewProduct(e) {
+            e.preventDefault();
+            const title = document.getElementById('newTitle').value;
+            const category = document.getElementById('newCategory').value;
+            const price = parseInt(document.getElementById('newPrice').value);
+            const stock = parseInt(document.getElementById('newStock').value);
+            const features = document.getElementById('newFeatures').value.split(',').map(f => f.trim());
+            const fileInput = document.getElementById('newImageFile');
+            const file = fileInput.files[0];
+
+            if (!file) return alert("Pilih foto akun dari galeri terlebih dahulu!");
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const imageBase64 = event.target.result;
+                const badges = { mlbb: "MLBB", ff: "Free Fire", roblox: "Roblox" };
+
+                const newObj = {
+                    id: Date.now(),
+                    title, category, price, stock,
+                    image: imageBase64,
+                    features,
+                    gameBadge: badges[category] || 'GAME'
+                };
+
+                products.push(newObj);
+                saveProductsToStorage();
+                
+                e.target.reset();
+                alert("Akun berhasil ditambahkan dengan gambar dari galeri!");
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function toggleCart() {
+            document.getElementById('cartDrawer').classList.toggle('translate-x-full');
+            document.getElementById('cartOverlay').classList.toggle('hidden');
+            document.body.classList.toggle('cart-open');
+        }
+
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product || product.stock <= 0) return;
+
+            const existing = cart.find(item => item.id === productId);
+            if (existing) {
+                if(existing.qty < product.stock) existing.qty++;
+                else { alert('Stok tidak cukup!'); return; }
+            } else {
+                cart.push({ ...product, qty: 1 });
+            }
+            updateCartUI();
+            toggleCart();
+        }
+
+        function updateCartQty(id, delta) {
+            const item = cart.find(i => i.id === id);
+            const product = products.find(p => p.id === id);
+
+            if (item) {
+                item.qty += delta;
+                if (item.qty > product.stock) item.qty = product.stock;
+                if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
+            }
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const container = document.getElementById('cartItemsContainer');
+            const countBadge = document.getElementById('cartCount');
+            const totalEl = document.getElementById('cartTotal');
+            container.innerHTML = '';
+            let total = 0, totalItems = 0;
+
+            if (cart.length === 0) {
+                container.innerHTML = `<div class="text-center py-10 text-slate-500 text-sm">Keranjang kosong.</div>`;
+            } else {
+                cart.forEach(item => {
+                    const subtotal = item.price * item.qty;
+                    total += subtotal;
+                    totalItems += item.qty;
+                    container.innerHTML += `
+                        <div class="bg-slate-800/50 border border-slate-700/50 p-3 rounded-xl flex items-center justify-between gap-3">
+                            <div class="flex-grow">
+                                <h4 class="text-xs font-bold text-slate-200 line-clamp-1">${item.title}</h4>
+                                <span class="text-xs text-indigo-400 font-semibold">Rp ${item.price.toLocaleString('id-ID')}</span>
+                            </div>
+                            <div class="flex items-center gap-2 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1">
+                                <button onclick="updateCartQty(${item.id}, -1)" class="text-xs text-slate-400 hover:text-white px-1">-</button>
+                                <span class="text-xs font-bold">${item.qty}</span>
+                                <button onclick="updateCartQty(${item.id}, 1)" class="text-xs text-slate-400 hover:text-white px-1">+</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            countBadge.innerText = totalItems;
+            totalEl.innerText = `Rp ${total.toLocaleString('id-ID')}`;
+        }
+
+        function checkoutCart() {
+            if (cart.length === 0) return alert('Keranjang kosong!');
+            let message = `Halo Admin, saya ingin memesan akun berikut:\n\n`;
+            let total = 0;
+            cart.forEach((item, index) => {
+                const subtotal = item.price * item.qty;
+                total += subtotal;
+                message += `${index + 1}. *${item.title}* (${item.qty}x) - Rp ${subtotal.toLocaleString('id-ID')}\n`;
+            });
+            message += `\n*Total Pembayaran:* Rp ${total.toLocaleString('id-ID')}\n\nApakah stok akun masih ready?`;
+            window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
+        }
+
+        function filterCategory(cat, btn) {
+            currentCategory = cat;
             document.querySelectorAll('.filter-btn').forEach(b => {
                 b.classList.remove('bg-indigo-600', 'text-white', 'active');
                 b.classList.add('bg-slate-900', 'text-slate-300');
             });
-
             btn.classList.remove('bg-slate-900', 'text-slate-300');
             btn.classList.add('bg-indigo-600', 'text-white', 'active');
-
-            const items = document.querySelectorAll('.product-item');
-            items.forEach(item => {
-                if (category === 'all' || item.classList.contains(category)) {
-                    item.style.display = 'flex';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
+            renderProducts();
         }
 
-        function buyProduct(title, price) {
-            const message = `Halo Admin, saya ingin membeli akun berikut:\n\n*Nama Akun:* ${title}\n*Harga:* Rp ${price}\n\nApakah akun ini masih ready?`;
-            const encodedMessage = encodeURIComponent(message);
-            window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, '_blank');
-        }
+        renderProducts();
     </script>
 </body>
-</html>
+    </html>
