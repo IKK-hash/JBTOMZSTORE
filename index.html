@@ -73,7 +73,7 @@
         <div id="pinFormSection">
             <h3 class="text-xl font-bold mb-4 text-center">Masukkan PIN Admin</h3>
             <div class="max-w-xs mx-auto space-y-4">
-                <input type="password" id="adminPinInput" placeholder="PIN Default: 1234" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-center text-lg tracking-widest focus:outline-none focus:border-indigo-500">
+                <input type="password" id="adminPinInput" placeholder="PIN Admin" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-center text-lg tracking-widest focus:outline-none focus:border-indigo-500">
                 <button onclick="verifyPin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl">Masuk Panel Admin</button>
             </div>
         </div>
@@ -231,7 +231,7 @@
                 document.getElementById('adminDashboardSection').classList.remove('hidden');
                 renderAdminProductList();
             } else {
-                alert("PIN Salah! PIN Default: 1234");
+                alert("PIN Salah!");
             }
         }
 
@@ -275,7 +275,6 @@
             }
         }
 
-        // FUNGSI UNTUK MEMBACA FILE DARI GALERI DAN CONVERT KE BASE64
         function saveNewProduct(e) {
             e.preventDefault();
             const title = document.getElementById('newTitle').value;
@@ -376,9 +375,10 @@
             totalEl.innerText = `Rp ${total.toLocaleString('id-ID')}`;
         }
 
+        // PERBAIKAN PADA FUNGSI CHECKOUT WA
         function checkoutCart() {
             if (cart.length === 0) return alert('Keranjang kosong!');
-            let message = `Halo Admin, saya ingin memesan akun berikut:\n\n`;
+            let message = `Halo Admin TOMZ STORE, saya ingin memesan akun berikut:\n\n`;
             let total = 0;
             cart.forEach((item, index) => {
                 const subtotal = item.price * item.qty;
@@ -386,7 +386,10 @@
                 message += `${index + 1}. *${item.title}* (${item.qty}x) - Rp ${subtotal.toLocaleString('id-ID')}\n`;
             });
             message += `\n*Total Pembayaran:* Rp ${total.toLocaleString('id-ID')}\n\nApakah stok akun masih ready?`;
-            window.open(`https://wa.me6283833157245/${whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
+
+            // URL format yang valid
+            const targetUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+            window.open(targetUrl, '_blank');
         }
 
         function filterCategory(cat, btn) {
